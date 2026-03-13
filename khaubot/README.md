@@ -21,7 +21,7 @@ KhauBot is a two-sided platform:
 
 ## Live Deployment
 
-- Frontend (Vercel): https://khaubot.vercel.app/
+- Frontend (Vercel): https://khaubot-171u.vercel.app/
 
 ## ▲ Deploy Frontend On Vercel
 
