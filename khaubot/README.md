@@ -19,6 +19,63 @@ KhauBot is a two-sided platform:
 | Frontend | Django 5 + Tailwind CSS |
 | API Communication | httpx |
 
+## ▲ Deploy Frontend On Vercel
+
+Deploy only the Django frontend from this repository. Keep FastAPI backend deployed separately (Render is fine) and point frontend to that API URL.
+
+### Vercel project settings
+
+1. Import repository in Vercel.
+2. Set **Root Directory** to `khaubot/frontend/khaubot_web`.
+3. Framework preset can stay **Other**.
+4. Build command:
+      - `python manage.py collectstatic --noinput`
+5. Install command:
+      - `pip install -r requirements.txt`
+
+### Required environment variables in Vercel
+
+- `SECRET_KEY` = strong random value
+- `DEBUG` = `False`
+- `ALLOWED_HOSTS` = `.vercel.app`
+- `CSRF_TRUSTED_ORIGINS` = `https://*.vercel.app`
+- `KHAUBOT_API_URL` = your deployed backend URL (example: `https://your-backend.onrender.com`)
+
+### Notes
+
+- `vercel.json` is provided in `khaubot/frontend/khaubot_web`.
+- API handler entrypoint is `api/index.py`.
+- Static files are served by WhiteNoise after running `collectstatic` at build time.
+
+## ▲ Deploy Backend On Vercel
+
+Backend now has a dedicated Vercel config at `khaubot/backend/vercel.json`.
+
+### Backend Vercel project settings
+
+1. Import the same repository as a second Vercel project.
+2. Set **Root Directory** to `khaubot/backend`.
+3. Install command:
+      - `pip install -r requirements.txt`
+4. No custom build command is required.
+
+## Neon DB Setup For Backend
+
+Set these environment variables in your backend deployment (Vercel project settings):
+
+- `DATABASE_URL` = Neon connection string (pooled URL recommended)
+- `CORS_ORIGINS` = comma-separated allowed frontend origins
+
+Example `DATABASE_URL` format:
+
+- `postgresql://<user>:<password>@<host>/<dbname>?sslmode=require`
+
+Notes:
+
+- Keep `sslmode=require` in the Neon connection string.
+- Backend auto-converts `postgres://` to `postgresql://` if needed.
+- Local development still defaults to SQLite when `DATABASE_URL` is not set.
+
 ## ⚙️ Running Locally
 
 ### 1. Backend (FastAPI)

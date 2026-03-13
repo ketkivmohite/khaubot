@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+import os
 from database import create_db_and_tables
 from routers import vendors, discover
 
@@ -23,9 +24,12 @@ app = FastAPI(
 )
 
 # Allow Django frontend to talk to this API
+cors_origins_env = os.getenv("CORS_ORIGINS", "http://localhost:8000,http://127.0.0.1:8002")
+cors_origins = [origin.strip() for origin in cors_origins_env.split(",") if origin.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8000"],  # Django dev server
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

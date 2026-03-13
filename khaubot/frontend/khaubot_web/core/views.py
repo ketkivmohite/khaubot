@@ -1,7 +1,8 @@
 import httpx
 from django.shortcuts import render
+from django.conf import settings
 
-FASTAPI_URL = "http://127.0.0.1:8001"
+FASTAPI_URL = settings.KHAUBOT_API_URL
 
 def home(request):
     results = []
