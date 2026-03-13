@@ -17,10 +17,15 @@ def home(request):
                 json={"query": query},
                 timeout=10.0
             )
+            response.raise_for_status()
             data = response.json()
             results = data.get("results", [])
+        except httpx.RequestError:
+            error = f"Could not reach backend at {FASTAPI_URL}."
+        except httpx.HTTPStatusError as e:
+            error = f"Backend error {e.response.status_code}: {e.response.text[:200]}"
         except Exception as e:
-            error = "Could not connect to KhauBot backend. Is it running?"
+            error = f"Unexpected error: {str(e)}"
 
     return render(request, "core/home.html", {
         "results": results,
@@ -55,12 +60,17 @@ def vendor_register(request):
                 json=payload,
                 timeout=10.0
             )
+            response.raise_for_status()
             if response.status_code == 201:
                 success = True
             else:
                 error = "Registration failed. Please try again."
-        except Exception:
-            error = "Could not connect to backend."
+        except httpx.RequestError:
+            error = f"Could not reach backend at {FASTAPI_URL}."
+        except httpx.HTTPStatusError as e:
+            error = f"Backend error {e.response.status_code}: {e.response.text[:200]}"
+        except Exception as e:
+            error = f"Unexpected error: {str(e)}"
 
     return render(request, "core/vendor_register.html", {
         "success": success,
