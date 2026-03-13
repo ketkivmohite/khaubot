@@ -19,6 +19,10 @@ KhauBot is a two-sided platform:
 | Frontend | Django 5 + Tailwind CSS |
 | API Communication | httpx |
 
+## Live Deployment
+
+- Frontend (Vercel): https://khaubot.vercel.app/
+
 ## ▲ Deploy Frontend On Vercel
 
 Deploy only the Django frontend from this repository. Keep FastAPI backend deployed separately (Render is fine) and point frontend to that API URL.
