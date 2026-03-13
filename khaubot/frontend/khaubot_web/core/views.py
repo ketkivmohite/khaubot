@@ -2,7 +2,7 @@ import httpx
 from django.shortcuts import render
 from django.conf import settings
 
-FASTAPI_URL = settings.KHAUBOT_API_URL
+FASTAPI_URL = settings.KHAUBOT_API_URL.rstrip("/")
 
 def home(request):
     results = []
@@ -15,7 +15,8 @@ def home(request):
             response = httpx.post(
                 f"{FASTAPI_URL}/api/discover",
                 json={"query": query},
-                timeout=10.0
+                timeout=10.0,
+                follow_redirects=True,
             )
             response.raise_for_status()
             data = response.json()
@@ -58,7 +59,8 @@ def vendor_register(request):
             response = httpx.post(
                 f"{FASTAPI_URL}/api/vendor/register",
                 json=payload,
-                timeout=10.0
+                timeout=10.0,
+                follow_redirects=True,
             )
             response.raise_for_status()
             if response.status_code == 201:
