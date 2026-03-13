@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KhauBot 🍛 Mumbai ka Food Finder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 text-white min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-orange-500 py-6 text-center shadow-lg">
+        <h1 class="text-4xl font-bold">🍛 KhauBot</h1>
+        <p class="text-orange-100 mt-1">Mumbai ka hyperlocal food finder</p>
+    </header>
+
+    <!-- Search Section -->
+    <main class="max-w-3xl mx-auto px-4 py-10">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="flex gap-3">
+                <input
+                    type="text"
+                    name="query"
+                    value="{{ query }}"
+                    placeholder="e.g. spicy vada pav near Bandra under ₹50..."
+                    class="flex-1 px-4 py-3 rounded-xl bg-gray-800 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:border-orange-400"
+                />
+                <button type="submit"
+                    class="bg-orange-500 hover:bg-orange-600 px-6 py-3 rounded-xl font-semibold transition">
+                    Search 🔍
+                </button>
+            </div>
+        </form>
+
+        <!-- Error -->
+        {% if error %}
+        <div class="mt-6 bg-red-900 border border-red-500 text-red-200 px-4 py-3 rounded-xl">
+            ⚠️ {{ error }}
+        </div>
+        {% endif %}
+
+        <!-- Results -->
+        {% if results %}
+        <div class="mt-8 space-y-4">
+            <h2 class="text-xl font-semibold text-orange-400">{{ results|length }} place{{ results|length|pluralize }} found 🎯</h2>
+            {% for vendor in results %}
+            <div class="bg-gray-800 rounded-2xl p-5 border border-gray-700 hover:border-orange-500 transition">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">{{ vendor.name }}</h3>
+                        <p class="text-orange-400 text-sm mt-1">{{ vendor.cuisine }} • {{ vendor.area }}</p>
+                        <p class="text-gray-400 text-sm mt-1">{{ vendor.signature_dishes }}</p>
+                        <p class="text-gray-500 text-xs mt-2">📍 {{ vendor.address }} • 🕐 {{ vendor.operating_hours }}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="bg-green-900 text-green-300 text-sm px-3 py-1 rounded-full">
+                            ₹{{ vendor.price_min }}–{{ vendor.price_max }}
+                        </span>
+                        {% if vendor.whatsapp_link %}
+                        <a href="{{ vendor.whatsapp_link }}" target="_blank"
+                            class="block mt-2 bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 rounded-full text-center">
+                            WhatsApp 📲
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% elif query %}
+        <div class="mt-8 text-center text-gray-400">
+            <p class="text-5xl mb-3">😕</p>
+            <p>No results found for "{{ query }}"</p>
+            <p class="text-sm mt-1">Try a different area or food item!</p>
+        </div>
+        {% endif %}
+
+        <!-- Register CTA -->
+        <div class="mt-12 text-center">
+            <p class="text-gray-400 mb-3">Are you a food vendor in Mumbai?</p>
+            <a href="/register/" class="bg-orange-500 hover:bg-orange-600 px-6 py-3 rounded-xl font-semibold transition">
+                Register your stall free 🍴
+            </a>
+        </div>
+    </main>
+
+</body>
+</html>

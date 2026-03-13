@@ -1,0 +1,14 @@
+# ── Django core ───────────────────────────────
+django==5.0.4
+django-environ==0.11.2       # .env support
+whitenoise==6.6.0            # serve static files easily
+
+# ── API calls to FastAPI backend ──────────────
+httpx==0.27.0                # async HTTP calls
+
+# ── Forms & UI helpers ────────────────────────
+django-crispy-forms==2.1
+crispy-tailwind==1.0.3
+
+# ── Dev tools ─────────────────────────────────
+django-debug-toolbar==4.3.0

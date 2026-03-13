@@ -1,0 +1,41 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+from database import create_db_and_tables
+from routers import vendors, discover
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Runs on startup
+    create_db_and_tables()
+    print("✅ KhauBot backend started. DB ready.")
+    yield
+    # Runs on shutdown
+    print("👋 KhauBot backend shutting down.")
+
+
+app = FastAPI(
+    title="KhauBot API",
+    description="AI-powered hyperlocal food discovery for Mumbai 🍛",
+    version="1.0.0",
+    lifespan=lifespan
+)
+
+# Allow Django frontend to talk to this API
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8000"],  # Django dev server
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Register routers
+app.include_router(vendors.router, prefix="/api/vendor", tags=["Vendor"])
+app.include_router(discover.router, prefix="/api", tags=["Discovery"])
+
+
+@app.get("/")
+def root():
+    return {"message": "KhauBot is live 🍜 Mumbai ka food, digital ho gaya!"}
