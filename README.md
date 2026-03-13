@@ -1,31 +1,31 @@
-
-# 🍛 KhauBot — Mumbai's Hyperlocal Food Discovery Platform
+# KhauBot — Mumbai's Hyperlocal Food Discovery Platform
 
 > AI-powered food discovery for Mumbai's informal food economy — street stalls, neighbourhood cafes, and cloud kitchens that Zomato/Swiggy don't cover.
 
-## 🌟 What is KhauBot?
+## What is KhauBot?
 
 KhauBot is a two-sided platform:
 - **For Vendors** — Any informal food business (street stall, cafe, cloud kitchen) can register for free. No GST, no FSSAI, no paperwork.
 - **For Users** — Search for food using natural language: *"spicy vada pav near Bandra under ₹50"* and KhauBot understands you.
 
-## 🚀 Tech Stack
+##  Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
 | Backend API | FastAPI (Python) |
 | NLP Pipeline | langdetect + keyword extraction |
-| Database | SQLite |
+| Database | PostgreSQL (Neon DB) |
 | Frontend | Django 5 + Tailwind CSS |
 | API Communication | httpx |
 
-## Live Deployment
+##  Live Deployment
 
 - Frontend (Vercel): https://khaubot-171u.vercel.app/
+- Backend API Docs: https://khaubot.vercel.app/docs
 
-## ▲ Deploy Frontend On Vercel
+## Deploy Frontend On Vercel
 
-Deploy only the Django frontend from this repository. Keep FastAPI backend deployed separately (Render is fine) and point frontend to that API URL.
+Deploy only the Django frontend from this repository. Keep FastAPI backend deployed separately and point frontend to that API URL.
 
 ### Vercel project settings
 
@@ -43,7 +43,7 @@ Deploy only the Django frontend from this repository. Keep FastAPI backend deplo
 - `DEBUG` = `False`
 - `ALLOWED_HOSTS` = `.vercel.app`
 - `CSRF_TRUSTED_ORIGINS` = `https://*.vercel.app`
-- `KHAUBOT_API_URL` = your deployed backend URL (example: `https://your-backend.onrender.com`)
+- `KHAUBOT_API_URL` = your deployed backend URL
 
 ### Notes
 
@@ -51,9 +51,9 @@ Deploy only the Django frontend from this repository. Keep FastAPI backend deplo
 - API handler entrypoint is `api/index.py`.
 - Static files are served by WhiteNoise after running `collectstatic` at build time.
 
-## ▲ Deploy Backend On Vercel
+## Deploy Backend On Vercel
 
-Backend now has a dedicated Vercel config at `khaubot/backend/vercel.json`.
+Backend has a dedicated Vercel config at `khaubot/backend/vercel.json`.
 
 ### Backend Vercel project settings
 
@@ -63,7 +63,7 @@ Backend now has a dedicated Vercel config at `khaubot/backend/vercel.json`.
       - `pip install -r requirements.txt`
 4. No custom build command is required.
 
-## Neon DB Setup For Backend
+##  Neon DB Setup For Backend
 
 Set these environment variables in your backend deployment (Vercel project settings):
 
@@ -72,7 +72,9 @@ Set these environment variables in your backend deployment (Vercel project setti
 
 Example `DATABASE_URL` format:
 
-- `postgresql://<user>:<password>@<host>/<dbname>?sslmode=require`
+```
+postgresql://<user>:<password>@<host>/<dbname>?sslmode=require
+```
 
 Notes:
 
@@ -80,7 +82,7 @@ Notes:
 - Backend auto-converts `postgres://` to `postgresql://` if needed.
 - Local development still defaults to SQLite when `DATABASE_URL` is not set.
 
-## ⚙️ Running Locally
+##  Running Locally
 
 ### 1. Backend (FastAPI)
 ```bash
@@ -101,7 +103,7 @@ python manage.py runserver 8002
 - Frontend: http://127.0.0.1:8002
 - API Docs: http://127.0.0.1:8001/docs
 
-## 🔌 API Endpoints
+##  API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -111,7 +113,7 @@ python manage.py runserver 8002
 | PATCH | /api/vendor/{id}/approve | Approve a vendor |
 | GET | /api/destinations | List all approved vendors |
 
-## 🧠 How the NLP Pipeline Works
+##  How the NLP Pipeline Works
 
 ```
 User types query
@@ -131,14 +133,14 @@ Match against vendor database
 Return ranked results
 ```
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 khaubot/
 ├── backend/                  # FastAPI backend
 │   ├── main.py               # App entry point
 │   ├── models.py             # Vendor DB models
-│   ├── database.py           # SQLite connection
+│   ├── database.py           # DB connection (SQLite local / Neon DB on prod)
 │   ├── routers/
 │   │   ├── vendors.py        # Vendor endpoints
 │   │   └── discover.py       # Discovery endpoints
@@ -152,15 +154,21 @@ khaubot/
         └── templates/        # HTML pages
 ```
 
-## 🔜 Roadmap
+##  Roadmap
 
+- [x] FastAPI backend with vendor registration + discovery API
+- [x] Django frontend deployed on Vercel
+- [x] PostgreSQL (Neon DB) connected on production
+- [x] Natural language search with NLP pipeline
 - [ ] Hindi + Marathi full NLP support
-- [ ] PostgreSQL + pgvector semantic search  
+- [ ] PostgreSQL + pgvector semantic search
 - [ ] WhatsApp Business API integration
 - [ ] Mobile app
-- [ ] Deploy on Railway
 
-## 📄 Research
+##  Research
 
 This project is based on an IEEE-style research paper on AI-powered hyperlocal food discovery for Mumbai's informal food economy.
-```
+
+
+
+*Made with ❤️ by Ketki Mohite*
