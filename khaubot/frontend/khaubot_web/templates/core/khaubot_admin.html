@@ -33,14 +33,14 @@
         {% endif %}
 
         <!-- Stats -->
-        <div class="grid grid-cols-3 gap-4 mb-8">
+        <div class="grid grid-cols-4 gap-4 mb-8">
             <div class="bg-gray-800 rounded-xl p-4 text-center">
                 <p class="text-2xl font-bold text-orange-400">{{ vendors|length }}</p>
                 <p class="text-gray-400 text-sm">Total Vendors</p>
             </div>
             <div class="bg-gray-800 rounded-xl p-4 text-center">
                 <p class="text-2xl font-bold text-yellow-400">
-                    {{ vendors|dictsort:"status"|length }}
+                    {% for v in vendors %}{% if v.status == "pending" %}✓{% endif %}{% endfor %}
                 </p>
                 <p class="text-gray-400 text-sm">Pending</p>
             </div>
@@ -50,9 +50,13 @@
                 </p>
                 <p class="text-gray-400 text-sm">Approved</p>
             </div>
+            <div class="bg-gray-800 rounded-xl p-4 text-center">
+                <p class="text-2xl font-bold text-blue-400">{{ users|length }}</p>
+                <p class="text-gray-400 text-sm">Total Users</p>
+            </div>
         </div>
 
-        <!-- Pending vendors first -->
+        <!-- Pending vendors -->
         <h2 class="text-xl font-semibold text-yellow-400 mb-4">⏳ Pending Approval</h2>
         {% for vendor in vendors %}
         {% if vendor.status == "pending" %}
@@ -122,6 +126,44 @@
         </div>
         {% endif %}
         {% endfor %}
+
+        <!-- Users -->
+        <h2 class="text-xl font-semibold text-blue-400 mb-4 mt-8">👤 Registered Users</h2>
+        <div class="bg-gray-800 rounded-xl overflow-hidden mb-4">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-gray-700 text-gray-400 text-left">
+                        <th class="px-4 py-3">Username</th>
+                        <th class="px-4 py-3">Email</th>
+                        <th class="px-4 py-3">Joined</th>
+                        <th class="px-4 py-3">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr class="border-b border-gray-700 hover:bg-gray-700">
+                        <td class="px-4 py-3 text-white font-medium">{{ u.username }}</td>
+                        <td class="px-4 py-3 text-gray-400">{{ u.email|default:"—" }}</td>
+                        <td class="px-4 py-3 text-gray-400">{{ u.date_joined|date:"d M Y" }}</td>
+                        <td class="px-4 py-3">
+                            {% if u.is_staff %}
+                            <span class="bg-purple-700 text-purple-200 px-2 py-1 rounded-full text-xs">Admin</span>
+                            {% elif u.is_active %}
+                            <span class="bg-blue-700 text-blue-200 px-2 py-1 rounded-full text-xs">Active</span>
+                            {% else %}
+                            <span class="bg-gray-700 text-gray-300 px-2 py-1 rounded-full text-xs">Inactive</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-4 py-4 text-gray-400 text-center">No users yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
     </div>
 
 </body>

@@ -4,6 +4,8 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.conf import settings
 from django.views.decorators.http import require_POST
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 
 FASTAPI_URL = settings.KHAUBOT_API_URL.rstrip("/")
 
@@ -102,6 +104,7 @@ def vendor_register(request):
 def khaubot_admin(request):
     error = None
     vendors = []
+    users = []
 
     try:
         response = httpx.get(
@@ -114,10 +117,18 @@ def khaubot_admin(request):
     except Exception as e:
         error = f"Could not load vendors: {str(e)}"
 
+    try:
+        users = User.objects.all().order_by("-date_joined").values(
+            "id", "username", "email", "date_joined", "is_staff", "is_active"
+        )
+    except Exception as e:
+        error = f"Could not load users: {str(e)}"
+
     return render(request, "core/khaubot_admin.html", {
         "vendors": vendors,
         "error": error,
         "success": request.GET.get("success"),
+        "users": users,
     })
 
 
@@ -143,3 +154,40 @@ def admin_reject(request, vendor_id):
     except Exception:
         pass
     return redirect("/khaubot-admin/?success=rejected")
+
+
+def user_login(request):
+    error = None
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect("/")
+        else:
+            error = "Invalid username or password."
+    return render(request, "core/login.html", {"error": error})
+
+
+def user_signup(request):
+    error = None
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        password2 = request.POST.get("password2")
+        if password != password2:
+            error = "Passwords do not match."
+        elif User.objects.filter(username=username).exists():
+            error = "Username already taken."
+        else:
+            User.objects.create_user(username=username, password=password)
+            user = authenticate(request, username=username, password=password)
+            login(request, user)
+            return redirect("/")
+    return render(request, "core/signup.html", {"error": error})
+
+
+def user_logout(request):
+    logout(request)
+    return redirect("/login/")
