@@ -1,38 +1,57 @@
 import httpx
+import json
 from django.shortcuts import render
+from django.http import JsonResponse
 from django.conf import settings
+from django.views.decorators.http import require_POST
 
 FASTAPI_URL = settings.KHAUBOT_API_URL.rstrip("/")
 
 def home(request):
-    results = []
-    query = ""
-    error = None
+    return render(request, "core/home.html")
 
-    if request.method == "POST":
-        query = request.POST.get("query", "")
-        try:
-            response = httpx.post(
-                f"{FASTAPI_URL}/api/discover",
-                json={"query": query},
-                timeout=10.0,
-                follow_redirects=True,
-            )
-            response.raise_for_status()
-            data = response.json()
-            results = data.get("results", [])
-        except httpx.RequestError:
-            error = f"Could not reach backend at {FASTAPI_URL}."
-        except httpx.HTTPStatusError as e:
-            error = f"Backend error {e.response.status_code}: {e.response.text[:200]}"
-        except Exception as e:
-            error = f"Unexpected error: {str(e)}"
 
-    return render(request, "core/home.html", {
-        "results": results,
-        "query": query,
-        "error": error,
-    })
+@require_POST
+def discover_chat(request):
+    try:
+        body = json.loads(request.body.decode("utf-8")) if request.body else {}
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON payload."}, status=400)
+
+    query = (body.get("query") or "").strip()
+    if not query:
+        return JsonResponse({"error": "Query is required."}, status=400)
+
+    try:
+        response = httpx.post(
+            f"{FASTAPI_URL}/api/discover",
+            json={"query": query},
+            timeout=10.0,
+            follow_redirects=True,
+        )
+        response.raise_for_status()
+        data = response.json()
+        return JsonResponse(
+            {
+                "query": data.get("query", query),
+                "detected_language": data.get("detected_language", "unknown"),
+                "extracted_intent": data.get("extracted_intent", "food_search"),
+                "results": data.get("results", []),
+            },
+            status=200,
+        )
+    except httpx.RequestError:
+        return JsonResponse(
+            {"error": f"Could not reach backend at {FASTAPI_URL}."},
+            status=503,
+        )
+    except httpx.HTTPStatusError as e:
+        return JsonResponse(
+            {"error": f"Backend error {e.response.status_code}: {e.response.text[:200]}"},
+            status=502,
+        )
+    except Exception as e:
+        return JsonResponse({"error": f"Unexpected error: {str(e)}"}, status=500)
 
 
 def vendor_register(request):

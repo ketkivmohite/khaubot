@@ -5,90 +5,295 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KhauBot 🍛 Mumbai ka Food Finder</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            color-scheme: dark;
+        }
+
+        body {
+            background:
+                radial-gradient(circle at 10% 10%, rgba(249, 115, 22, 0.18), transparent 35%),
+                radial-gradient(circle at 90% 90%, rgba(234, 88, 12, 0.2), transparent 40%),
+                #09090b;
+        }
+
+        .chat-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-scroll::-webkit-scrollbar-thumb {
+            background: rgba(251, 146, 60, 0.35);
+            border-radius: 999px;
+        }
+
+        .typing-dot {
+            animation: bounce 1s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.15s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        @keyframes bounce {
+            0%,
+            80%,
+            100% {
+                transform: translateY(0);
+                opacity: 0.5;
+            }
+
+            40% {
+                transform: translateY(-4px);
+                opacity: 1;
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.35s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 </head>
-<body class="bg-gray-950 text-white min-h-screen">
+<body class="text-white min-h-screen">
+    {% csrf_token %}
+    <main class="min-h-screen flex flex-col items-center px-4 py-4 sm:py-6">
+        <section class="w-full max-w-4xl flex-1 flex flex-col border border-orange-400/20 bg-zinc-900/70 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl shadow-orange-900/20">
+            <header class="flex items-center justify-between px-4 py-4 sm:px-6 border-b border-orange-500/20 bg-zinc-950/80">
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-black tracking-wide text-orange-400">KhauBot</h1>
+                    <p class="text-xs sm:text-sm text-zinc-300 mt-1">Mumbai ka hyperlocal food discovery chat</p>
+                </div>
+                <a href="/vendor/" class="bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors duration-200">
+                    For Vendors
+                </a>
+            </header>
 
-    <!-- Header -->
-    <header class="bg-orange-500 py-6 text-center shadow-lg">
-        <h1 class="text-4xl font-bold">🍛 KhauBot</h1>
-        <p class="text-orange-100 mt-1">Mumbai ka hyperlocal food finder</p>
-    </header>
-
-    <!-- Search Section -->
-    <main class="max-w-3xl mx-auto px-4 py-10">
-        <form method="POST">
-            {% csrf_token %}
-            <div class="flex gap-3">
-                <input
-                    type="text"
-                    name="query"
-                    value="{{ query }}"
-                    placeholder="e.g. spicy vada pav near Bandra under ₹50..."
-                    class="flex-1 px-4 py-3 rounded-xl bg-gray-800 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:border-orange-400"
-                />
-                <button type="submit"
-                    class="bg-orange-500 hover:bg-orange-600 px-6 py-3 rounded-xl font-semibold transition">
-                    Search 🔍
-                </button>
-            </div>
-        </form>
-
-        <!-- Error -->
-        {% if error %}
-        <div class="mt-6 bg-red-900 border border-red-500 text-red-200 px-4 py-3 rounded-xl">
-            ⚠️ {{ error }}
-        </div>
-        {% endif %}
-
-        <!-- Results -->
-        {% if results %}
-        <div class="mt-8 space-y-4">
-            <h2 class="text-xl font-semibold text-orange-400">{{ results|length }} place{{ results|length|pluralize }} found 🎯</h2>
-            {% for vendor in results %}
-            <div class="bg-gray-800 rounded-2xl p-5 border border-gray-700 hover:border-orange-500 transition">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <h3 class="text-lg font-bold text-white">{{ vendor.name }}</h3>
-                        <p class="text-orange-400 text-sm mt-1">{{ vendor.cuisine }} • {{ vendor.area }}</p>
-                        <p class="text-gray-400 text-sm mt-1">{{ vendor.signature_dishes }}</p>
-                        <p class="text-gray-500 text-xs mt-2">📍 {{ vendor.address }} • 🕐 {{ vendor.operating_hours }}</p>
-                    </div>
-                    <div class="text-right">
-                        <span class="bg-green-900 text-green-300 text-sm px-3 py-1 rounded-full">
-                            ₹{{ vendor.price_min }}–{{ vendor.price_max }}
-                        </span>
-                        {% if vendor.whatsapp_link %}
-                        <a href="{{ vendor.whatsapp_link }}" target="_blank"
-                            class="block mt-2 bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 rounded-full text-center">
-                            WhatsApp 📲
-                        </a>
-                        {% endif %}
+            <div id="chatWindow" class="chat-scroll flex-1 overflow-y-auto px-3 py-4 sm:px-6 sm:py-6 space-y-4">
+                <div class="fade-in flex">
+                    <div class="max-w-[90%] sm:max-w-[80%] rounded-2xl px-4 py-3 bg-zinc-800 border border-orange-500/20">
+                        <p class="text-sm sm:text-base leading-relaxed">Namaste! 🍛 Main KhauBot hoon. Mumbai mein kya khana hai aaj?</p>
                     </div>
                 </div>
             </div>
-            {% endfor %}
-        </div>
 
-        {% elif query %}
-        <div class="mt-8 text-center text-gray-400">
-            <p class="text-5xl mb-3">😕</p>
-            <p>No results found for "{{ query }}"</p>
-            <p class="text-sm mt-1">Try a different area or food item!</p>
-        </div>
-        {% endif %}
-
-        <!-- Register CTA -->
-        <div class="mt-12 text-center">
-            <p class="text-gray-400 mb-3">Are you a food vendor in Mumbai?</p>
-            <a href="/register/" class="bg-orange-500 hover:bg-orange-600 px-6 py-3 rounded-xl font-semibold transition">
-                Register your stall free 🍴
-            </a>
-        </div>
+            <div class="border-t border-orange-500/20 bg-zinc-950/85 px-3 py-3 sm:px-6 sm:py-4">
+                <form id="chatForm" class="flex gap-2 sm:gap-3">
+                    <input
+                        id="chatInput"
+                        type="text"
+                        placeholder="Type like: chai tapri near Bandra"
+                        autocomplete="off"
+                        class="flex-1 rounded-xl bg-zinc-800 border border-zinc-700 px-4 py-3 text-sm sm:text-base text-white placeholder-zinc-400 focus:outline-none focus:border-orange-400"
+                    />
+                    <button
+                        id="sendButton"
+                        type="submit"
+                        class="bg-orange-500 hover:bg-orange-600 active:scale-[0.98] text-white px-4 sm:px-6 py-3 rounded-xl font-semibold transition"
+                    >
+                        Send
+                    </button>
+                </form>
+                <p class="text-[11px] sm:text-xs text-zinc-400 mt-2">Try: "ghar ka khana deliver karo" or "vada pav Bandra"</p>
+            </div>
+        </section>
     </main>
 
-    <footer class="text-center pb-8 text-sm text-gray-500">
-        Made by Ketki Mohite
-    </footer>
+    <template id="typingTemplate">
+        <div class="fade-in flex" data-typing="true">
+            <div class="rounded-2xl px-4 py-3 bg-zinc-800 border border-orange-500/20 flex items-center gap-1">
+                <span class="typing-dot h-2 w-2 rounded-full bg-orange-300"></span>
+                <span class="typing-dot h-2 w-2 rounded-full bg-orange-300"></span>
+                <span class="typing-dot h-2 w-2 rounded-full bg-orange-300"></span>
+            </div>
+        </div>
+    </template>
 
+    <script>
+        const chatWindow = document.getElementById("chatWindow");
+        const chatForm = document.getElementById("chatForm");
+        const chatInput = document.getElementById("chatInput");
+        const sendButton = document.getElementById("sendButton");
+        const typingTemplate = document.getElementById("typingTemplate");
+        const csrfTokenInput = document.querySelector("input[name='csrfmiddlewaretoken']");
+        const csrfToken = csrfTokenInput ? csrfTokenInput.value : "";
+
+        function scrollToBottom() {
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function addUserBubble(message) {
+            const wrapper = document.createElement("div");
+            wrapper.className = "fade-in flex justify-end";
+            wrapper.innerHTML = `
+                <div class="max-w-[90%] sm:max-w-[80%] rounded-2xl px-4 py-3 bg-orange-500 text-white shadow-lg shadow-orange-900/30">
+                    <p class="text-sm sm:text-base leading-relaxed whitespace-pre-wrap"></p>
+                </div>
+            `;
+            wrapper.querySelector("p").textContent = message;
+            chatWindow.appendChild(wrapper);
+            scrollToBottom();
+        }
+
+        function buildVendorCard(vendor) {
+            const priceMin = vendor.price_min ?? "-";
+            const priceMax = vendor.price_max ?? "-";
+            const area = vendor.area || "Mumbai";
+            const cuisine = vendor.cuisine || "Local food";
+            const hours = vendor.operating_hours || "Timings not provided";
+
+            const card = document.createElement("div");
+            card.className = "rounded-xl border border-orange-500/20 bg-zinc-900 px-3 py-3";
+            card.innerHTML = `
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <h3 class="text-sm sm:text-base font-bold text-orange-300"></h3>
+                        <p class="text-xs sm:text-sm text-zinc-200 mt-1"></p>
+                        <p class="text-xs text-zinc-400 mt-1"></p>
+                    </div>
+                    <span class="text-xs font-semibold text-green-200 bg-green-900/50 px-2 py-1 rounded-full"></span>
+                </div>
+                <div class="mt-2"></div>
+            `;
+
+            card.querySelector("h3").textContent = vendor.name || "Unknown Vendor";
+            card.querySelectorAll("p")[0].textContent = `${cuisine} • ${area}`;
+            card.querySelectorAll("p")[1].textContent = `Open: ${hours}`;
+            card.querySelector("span").textContent = `₹${priceMin}-${priceMax}`;
+
+            if (vendor.whatsapp_link) {
+                const wa = document.createElement("a");
+                wa.href = vendor.whatsapp_link;
+                wa.target = "_blank";
+                wa.rel = "noopener noreferrer";
+                wa.className = "inline-flex mt-2 text-xs font-semibold bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-lg transition-colors";
+                wa.textContent = "WhatsApp";
+                card.lastElementChild.appendChild(wa);
+            }
+
+            return card;
+        }
+
+        function addBotBubble(data, query) {
+            const wrapper = document.createElement("div");
+            wrapper.className = "fade-in flex";
+
+            const bubble = document.createElement("div");
+            bubble.className = "max-w-[95%] sm:max-w-[85%] rounded-2xl px-4 py-3 bg-zinc-800 border border-orange-500/20";
+
+            const results = data.results || [];
+            if (!results.length) {
+                bubble.innerHTML = "<p class='text-sm sm:text-base leading-relaxed'>Kuch nahi mila! Try karo 'vada pav Bandra' ya 'chai Andheri'</p>";
+            } else {
+                const intro = document.createElement("p");
+                intro.className = "text-sm sm:text-base leading-relaxed mb-3";
+                intro.textContent = `Yeh mila for \"${query}\":`;
+                bubble.appendChild(intro);
+
+                const list = document.createElement("div");
+                list.className = "space-y-2";
+                results.forEach((vendor) => {
+                    list.appendChild(buildVendorCard(vendor));
+                });
+                bubble.appendChild(list);
+            }
+
+            wrapper.appendChild(bubble);
+            chatWindow.appendChild(wrapper);
+            scrollToBottom();
+        }
+
+        function addErrorBubble(message) {
+            const wrapper = document.createElement("div");
+            wrapper.className = "fade-in flex";
+            wrapper.innerHTML = `
+                <div class="max-w-[90%] sm:max-w-[80%] rounded-2xl px-4 py-3 bg-red-950 border border-red-700">
+                    <p class="text-sm sm:text-base leading-relaxed"></p>
+                </div>
+            `;
+            wrapper.querySelector("p").textContent = message;
+            chatWindow.appendChild(wrapper);
+            scrollToBottom();
+        }
+
+        function addTypingIndicator() {
+            const indicator = typingTemplate.content.firstElementChild.cloneNode(true);
+            chatWindow.appendChild(indicator);
+            scrollToBottom();
+            return indicator;
+        }
+
+        function wait(ms) {
+            return new Promise((resolve) => setTimeout(resolve, ms));
+        }
+
+        chatForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const query = chatInput.value.trim();
+            if (!query) {
+                return;
+            }
+
+            addUserBubble(query);
+            chatInput.value = "";
+            sendButton.disabled = true;
+            chatInput.disabled = true;
+
+            const typingEl = addTypingIndicator();
+
+            try {
+                const [response] = await Promise.all([
+                    fetch("/api/discover/", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrfToken,
+                        },
+                        body: JSON.stringify({ query }),
+                    }),
+                    wait(1200),
+                ]);
+
+                typingEl.remove();
+
+                if (!response.ok) {
+                    let errorMessage = "Something went wrong. Thoda der baad try karo.";
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.error) {
+                            errorMessage = errorData.error;
+                        }
+                    } catch (_) {
+                    }
+                    addErrorBubble(errorMessage);
+                    return;
+                }
+
+                const data = await response.json();
+                addBotBubble(data, query);
+            } catch (error) {
+                typingEl.remove();
+                addErrorBubble("Network issue. Internet/backend check karo and try again.");
+            } finally {
+                sendButton.disabled = false;
+                chatInput.disabled = false;
+                chatInput.focus();
+            }
+        });
+    </script>
 </body>
 </html>
