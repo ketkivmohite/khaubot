@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up – KhauBot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background:
+                radial-gradient(circle at 10% 10%, rgba(249, 115, 22, 0.18), transparent 35%),
+                radial-gradient(circle at 90% 90%, rgba(234, 88, 12, 0.2), transparent 40%),
+                #09090b;
+        }
+    </style>
+</head>
+<body class="text-white min-h-screen flex items-center justify-center px-4">
+    <div class="w-full max-w-md bg-zinc-900 border border-orange-400/20 rounded-3xl p-8 shadow-2xl">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-black text-orange-400">🍛 KhauBot</h1>
+            <p class="text-zinc-400 mt-2">Create your account — it's free!</p>
+        </div>
+
+        {% if error %}
+        <div class="bg-red-950 border border-red-700 text-red-300 px-4 py-3 rounded-xl mb-6 text-sm">
+            ❌ {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label class="block text-sm text-zinc-400 mb-2">Username</label>
+                <input type="text" name="username" required
+                    class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-400"
+                    placeholder="Choose a username" />
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm text-zinc-400 mb-2">Password</label>
+                <input type="password" name="password" required
+                    class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-400"
+                    placeholder="Choose a password" />
+            </div>
+            <div class="mb-6">
+                <label class="block text-sm text-zinc-400 mb-2">Confirm Password</label>
+                <input type="password" name="password2" required
+                    class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-400"
+                    placeholder="Repeat your password" />
+            </div>
+            <button type="submit"
+                class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition">
+                Create Account
+            </button>
+        </form>
+
+        <p class="text-center text-zinc-400 text-sm mt-6">
+            Already have an account?
+            <a href="/login/" class="text-orange-400 hover:underline">Login</a>
+        </p>
+    </div>
+</body>
+</html>

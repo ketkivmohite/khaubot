@@ -1,0 +1,18 @@
+# Python virtual environments
+.venv/
+.venv312/
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Databases
+*.db
+*.sqlite3
+
+# Environment variables
+.env
+
+# VS Code settings
+.vscode/

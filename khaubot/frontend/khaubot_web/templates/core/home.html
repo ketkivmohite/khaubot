@@ -39,13 +39,10 @@
         }
 
         @keyframes bounce {
-            0%,
-            80%,
-            100% {
+            0%, 80%, 100% {
                 transform: translateY(0);
                 opacity: 0.5;
             }
-
             40% {
                 transform: translateY(-4px);
                 opacity: 1;
@@ -61,7 +58,6 @@
                 opacity: 0;
                 transform: translateY(8px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -78,9 +74,21 @@
                     <h1 class="text-2xl sm:text-3xl font-black tracking-wide text-orange-400">KhauBot</h1>
                     <p class="text-xs sm:text-sm text-zinc-300 mt-1">Mumbai ka hyperlocal food discovery chat</p>
                 </div>
-                <a href="/vendor/" class="bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors duration-200">
-                    For Vendors
-                </a>
+                <div class="flex items-center gap-2">
+                    {% if user.is_authenticated %}
+                    <span class="text-xs text-zinc-400 hidden sm:block">Hi, {{ user.username }}!</span>
+                    <a href="/logout/" class="bg-zinc-700 hover:bg-zinc-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors duration-200">
+                        Logout
+                    </a>
+                    {% else %}
+                    <a href="/login/" class="bg-zinc-700 hover:bg-zinc-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors duration-200">
+                        Login
+                    </a>
+                    {% endif %}
+                    <a href="/vendor/" class="bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors duration-200">
+                        For Vendors
+                    </a>
+                </div>
             </header>
 
             <div id="chatWindow" class="chat-scroll flex-1 overflow-y-auto px-3 py-4 sm:px-6 sm:py-6 space-y-4">
@@ -244,9 +252,7 @@
         chatForm.addEventListener("submit", async (event) => {
             event.preventDefault();
             const query = chatInput.value.trim();
-            if (!query) {
-                return;
-            }
+            if (!query) return;
 
             addUserBubble(query);
             chatInput.value = "";
@@ -274,11 +280,8 @@
                     let errorMessage = "Something went wrong. Thoda der baad try karo.";
                     try {
                         const errorData = await response.json();
-                        if (errorData.error) {
-                            errorMessage = errorData.error;
-                        }
-                    } catch (_) {
-                    }
+                        if (errorData.error) errorMessage = errorData.error;
+                    } catch (_) {}
                     addErrorBubble(errorMessage);
                     return;
                 }
