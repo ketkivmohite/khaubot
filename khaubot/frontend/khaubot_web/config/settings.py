@@ -13,6 +13,7 @@ ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(',') if host.s
 csrf_trusted_origins_env = os.getenv('CSRF_TRUSTED_ORIGINS', 'https://*.vercel.app')
 CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_trusted_origins_env.split(',') if origin.strip()]
 
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -20,12 +21,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     # Third party
     'crispy_forms',
     'crispy_tailwind',
+
     # Our apps
     'core',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -38,23 +42,36 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+
 ROOT_URLCONF = 'config.urls'
 
+
+# ───────────────── Templates ─────────────────
+
 TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
+{
+    'BACKEND': 'django.template.backends.django.DjangoTemplates',
+
+    # Added core/templates so Vercel always finds login/signup
+    'DIRS': [
+        BASE_DIR / 'templates',
+        BASE_DIR / 'core' / 'templates'
+    ],
+
+    'APP_DIRS': True,
+
+    'OPTIONS': {
+        'context_processors': [
+            'django.template.context_processors.debug',
+            'django.template.context_processors.request',
+            'django.contrib.auth.context_processors.auth',
+            'django.contrib.messages.context_processors.messages',
+        ],
     },
-]
+}]
+
+
+# ───────────────── Database ─────────────────
 
 DATABASES = {
     'default': {
@@ -63,27 +80,45 @@ DATABASES = {
     }
 }
 
+# Vercel serverless temp storage
 if os.getenv('VERCEL'):
     DATABASES['default']['NAME'] = '/tmp/db.sqlite3'
 
+
+# ───────────────── Sessions ─────────────────
+
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 
+# Needed for auth cookies behind Vercel proxy
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+
+# ───────────────── Static Files ─────────────────
+
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+
+STATICFILES_DIRS = [
+    BASE_DIR / 'static'
+]
+
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 STORAGES = {
     'staticfiles': {
         'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
     }
 }
 
+
+# ───────────────── Crispy Forms ─────────────────
+
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'tailwind'
 CRISPY_TEMPLATE_PACK = 'tailwind'
 
-# KhauBot FastAPI backend URL
+
+# ───────────────── FastAPI Backend URL ─────────────────
+
 KHAUBOT_API_URL = os.getenv('KHAUBOT_API_URL', 'http://127.0.0.1:8001')
 
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
-

@@ -1,7 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from dotenv import load_dotenv
 import os
+
+# Load environment variables from .env
+load_dotenv()
+
 from database import create_db_and_tables
 from routers import vendors, discover
 
