@@ -1,6 +1,6 @@
 import httpx
 import json
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.conf import settings
 from django.views.decorators.http import require_POST
@@ -97,3 +97,49 @@ def vendor_register(request):
         "success": success,
         "error": error,
     })
+
+
+def khaubot_admin(request):
+    error = None
+    vendors = []
+
+    try:
+        response = httpx.get(
+            f"{FASTAPI_URL}/api/vendor/all",
+            timeout=10.0,
+            follow_redirects=True,
+        )
+        response.raise_for_status()
+        vendors = response.json()
+    except Exception as e:
+        error = f"Could not load vendors: {str(e)}"
+
+    return render(request, "core/khaubot_admin.html", {
+        "vendors": vendors,
+        "error": error,
+        "success": request.GET.get("success"),
+    })
+
+
+def admin_approve(request, vendor_id):
+    try:
+        httpx.patch(
+            f"{FASTAPI_URL}/api/vendor/{vendor_id}/approve",
+            timeout=10.0,
+            follow_redirects=True,
+        )
+    except Exception:
+        pass
+    return redirect("/khaubot-admin/?success=approved")
+
+
+def admin_reject(request, vendor_id):
+    try:
+        httpx.patch(
+            f"{FASTAPI_URL}/api/vendor/{vendor_id}/reject",
+            timeout=10.0,
+            follow_redirects=True,
+        )
+    except Exception:
+        pass
+    return redirect("/khaubot-admin/?success=rejected")
