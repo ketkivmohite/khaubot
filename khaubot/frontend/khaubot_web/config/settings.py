@@ -52,7 +52,6 @@ TEMPLATES = [
 {
     'BACKEND': 'django.template.backends.django.DjangoTemplates',
 
-    # Added core/templates so Vercel always finds login/signup
     'DIRS': [
         BASE_DIR / 'templates',
         BASE_DIR / 'core' / 'templates'
@@ -84,12 +83,18 @@ DATABASES = {
 if os.getenv('VERCEL'):
     DATABASES['default']['NAME'] = '/tmp/db.sqlite3'
 
+    # Auto-run migrations so tables exist
+    from django.core.management import call_command
+    try:
+        call_command("migrate", interactive=False)
+    except Exception:
+        pass
+
 
 # ───────────────── Sessions ─────────────────
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 
-# Needed for auth cookies behind Vercel proxy
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
