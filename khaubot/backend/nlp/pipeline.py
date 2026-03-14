@@ -2,13 +2,20 @@
 KhauBot NLP Pipeline
 ====================
 Phase 1: Rule-based keyword extraction (works right now, no GPU needed)
-Phase 3: Swap in multilingual sentence transformers for semantic search
+Phase 3: Multilingual sentence-transformers semantic search
 
 This file is the brain of KhauBot.
 """
 
-from langdetect import detect
+import os
 import re
+from functools import lru_cache
+from langdetect import detect
+
+try:
+    from sentence_transformers import SentenceTransformer
+except Exception:
+    SentenceTransformer = None
 
 # ─── Keyword maps ─────────────────────────────────────────────────────────────
 
@@ -22,7 +29,9 @@ CUISINE_KEYWORDS = {
     "vada pav": "vada pav", "vadapav": "vada pav", "wada pao": "vada pav",
     "biryani": "biryani", "biriyani": "biryani",
     "pav bhaji": "pav bhaji", "pavbhaji": "pav bhaji",
-    "chai": "chai", "tea": "chai",
+    "chai": "chai", "tea": "chai", "tapri": "chai", "tapree": "chai", "tapri chai": "chai",
+    "chai tapri": "chai", "tea stall": "chai", "cutting chai": "chai", "adrak chai": "chai",
+    "chaha": "chai", "chay": "chai",
     "coffee": "coffee",
     "pizza": "pizza",
     "burger": "burger",
@@ -47,6 +56,65 @@ PRICE_PATTERNS = [
     r"[₹rs\.]+\s*(\d+)\s*se kam",   # Hindi: ₹100 se kam
     r"(\d+)\s*rupees\s*se kam",
 ]
+
+SEMANTIC_MODEL_NAME = os.getenv(
+    "SEMANTIC_MODEL_NAME",
+    "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+)
+
+
+@lru_cache(maxsize=1)
+def get_semantic_model():
+    """
+    Lazy-load multilingual embedding model once per process.
+    Falls back gracefully if package/model cannot load.
+    """
+    if SentenceTransformer is None:
+        return None
+
+    try:
+        return SentenceTransformer(SEMANTIC_MODEL_NAME)
+    except Exception:
+        return None
+
+
+def semantic_similarity(query: str, candidate_text: str) -> float:
+    """
+    Returns cosine-like similarity in [approximately -1, 1] using normalized embeddings.
+    If semantic model is unavailable, returns 0.0 so API still works.
+    """
+    model = get_semantic_model()
+    if not model:
+        return 0.0
+
+    if not query or not candidate_text:
+        return 0.0
+
+    embeddings = model.encode(
+        [query, candidate_text],
+        normalize_embeddings=True,
+    )
+    return float(embeddings[0] @ embeddings[1])
+
+
+def build_vendor_search_text(vendor) -> str:
+    """
+    Build rich searchable text per vendor for semantic matching.
+    Works with SQLModel instances from DB.
+    """
+    category = getattr(vendor, "category", "") or ""
+    category_value = getattr(category, "value", category)
+
+    parts = [
+        getattr(vendor, "name", "") or "",
+        category_value,
+        getattr(vendor, "area", "") or "",
+        getattr(vendor, "address", "") or "",
+        getattr(vendor, "cuisine", "") or "",
+        getattr(vendor, "signature_dishes", "") or "",
+        getattr(vendor, "operating_hours", "") or "",
+    ]
+    return " | ".join(str(p) for p in parts if p)
 
 
 # ─── Main pipeline ────────────────────────────────────────────────────────────

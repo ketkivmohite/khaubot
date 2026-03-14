@@ -6,3 +6,4 @@ pydantic==2.7.1
 langdetect==1.0.9
 python-multipart==0.0.9
 python-dotenv==1.0.1
+sentence-transformers==3.0.1
