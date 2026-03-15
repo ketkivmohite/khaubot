@@ -14,7 +14,7 @@
         }
     </style>
 </head>
-<body class="text-white min-h-screen flex items-center justify-center px-4">
+<body class="text-white min-h-screen flex items-center justify-center px-4 py-10">
     <div class="w-full max-w-md bg-zinc-900 border border-orange-400/20 rounded-3xl p-8 shadow-2xl">
         <div class="text-center mb-8">
             <h1 class="text-3xl font-black text-orange-400">🍛 KhauBot</h1>
@@ -52,17 +52,102 @@
                 <label class="block text-sm text-zinc-400 mb-3">I am a...</label>
                 <div class="flex gap-3">
                     <label class="flex-1 cursor-pointer">
-                        <input type="radio" name="user_type" value="user" class="hidden peer" checked>
+                        <input type="radio" name="user_type" value="user" class="hidden peer" checked onchange="toggleVendorFields(false)">
                         <div class="peer-checked:border-orange-400 peer-checked:bg-orange-500/10 border border-zinc-600 rounded-xl px-4 py-3 text-center text-sm font-semibold transition-all">
                             🍽️ Food Finder
                         </div>
                     </label>
                     <label class="flex-1 cursor-pointer">
-                        <input type="radio" name="user_type" value="vendor" class="hidden peer">
+                        <input type="radio" name="user_type" value="vendor" class="hidden peer" onchange="toggleVendorFields(true)">
                         <div class="peer-checked:border-orange-400 peer-checked:bg-orange-500/10 border border-zinc-600 rounded-xl px-4 py-3 text-center text-sm font-semibold transition-all">
                             🏪 Vendor
                         </div>
                     </label>
+                </div>
+            </div>
+
+            <!-- Vendor fields — hidden by default -->
+            <div id="vendorFields" class="hidden space-y-4 mb-6">
+                <p class="text-sm text-orange-400 font-semibold">Tell us about your stall</p>
+
+                <div>
+                    <label class="block text-sm text-zinc-400 mb-2">Business Name *</label>
+                    <input type="text" name="name"
+                        class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-400"
+                        placeholder="e.g. Anand Vada Pav" />
+                </div>
+
+                <div>
+                    <label class="block text-sm text-zinc-400 mb-2">Category</label>
+                    <select name="category"
+                        class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-400">
+                        <option value="street_stall">Street Stall</option>
+                        <option value="cafe">Cafe</option>
+                        <option value="cloud_kitchen">Cloud Kitchen</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm text-zinc-400 mb-2">Area *</label>
+                        <input type="text" name="area" placeholder="e.g. Bandra"
+                            class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-400" />
+                    </div>
+                    <div>
+                        <label class="block text-sm text-zinc-400 mb-2">Full Address</label>
+                        <input type="text" name="address" placeholder="e.g. Near Station"
+                            class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-400" />
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm text-zinc-400 mb-2">Cuisine *</label>
+                    <input type="text" name="cuisine" placeholder="e.g. Street Food, North Indian"
+                        class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-400" />
+                </div>
+
+                <div>
+                    <label class="block text-sm text-zinc-400 mb-2">Signature Dishes</label>
+                    <input type="text" name="signature_dishes" placeholder="e.g. Vada Pav, Misal Pav"
+                        class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-400" />
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm text-zinc-400 mb-2">Min Price (₹)</label>
+                        <input type="number" name="price_min" value="20"
+                            class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-400" />
+                    </div>
+                    <div>
+                        <label class="block text-sm text-zinc-400 mb-2">Max Price (₹)</label>
+                        <input type="number" name="price_max" value="200"
+                            class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-400" />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm text-zinc-400 mb-2">Operating Hours</label>
+                        <input type="text" name="operating_hours" placeholder="e.g. 8am-10pm"
+                            class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-400" />
+                    </div>
+                    <div>
+                        <label class="block text-sm text-zinc-400 mb-2">Open Days</label>
+                        <input type="text" name="open_days" placeholder="e.g. Mon-Sat"
+                            class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-400" />
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm text-zinc-400 mb-2">Contact Number *</label>
+                    <input type="text" name="contact" placeholder="e.g. 9876543210"
+                        class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-400" />
+                </div>
+
+                <div>
+                    <label class="block text-sm text-zinc-400 mb-2">WhatsApp Link (optional)</label>
+                    <input type="text" name="whatsapp_link" placeholder="https://wa.me/91..."
+                        class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-400" />
                 </div>
             </div>
 
@@ -77,5 +162,16 @@
             <a href="/login/" class="text-orange-400 hover:underline">Login</a>
         </p>
     </div>
+
+    <script>
+        function toggleVendorFields(show) {
+            const fields = document.getElementById('vendorFields');
+            if (show) {
+                fields.classList.remove('hidden');
+            } else {
+                fields.classList.add('hidden');
+            }
+        }
+    </script>
 </body>
 </html>

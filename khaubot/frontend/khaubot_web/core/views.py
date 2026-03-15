@@ -62,6 +62,14 @@ def discover_chat(request):
 
 
 def vendor_register(request):
+    if not request.user.is_authenticated:
+        return redirect('/login/')
+    try:
+        if request.user.profile.user_type != 'vendor':
+            return redirect('/')
+    except:
+        return redirect('/')
+
     success = False
     error = None
 
@@ -199,7 +207,35 @@ def user_signup(request):
             UserProfile.objects.create(user=user, user_type=user_type)
             user = authenticate(request, username=username, password=password)
             login(request, user)
+
+            if user_type == 'vendor':
+                try:
+                    payload = {
+                        "name": request.POST.get("name", ""),
+                        "category": request.POST.get("category", "street_stall"),
+                        "area": request.POST.get("area", ""),
+                        "address": request.POST.get("address", ""),
+                        "cuisine": request.POST.get("cuisine", ""),
+                        "signature_dishes": request.POST.get("signature_dishes", ""),
+                        "price_min": int(request.POST.get("price_min") or 0),
+                        "price_max": int(request.POST.get("price_max") or 0),
+                        "operating_hours": request.POST.get("operating_hours", ""),
+                        "open_days": request.POST.get("open_days", ""),
+                        "contact": request.POST.get("contact", ""),
+                        "whatsapp_link": request.POST.get("whatsapp_link", ""),
+                        "photo_url": "",
+                    }
+                    httpx.post(
+                        f"{FASTAPI_URL}/api/vendor/register",
+                        json=payload,
+                        timeout=10.0,
+                        follow_redirects=True,
+                    )
+                except Exception:
+                    pass
+
             return redirect("/")
+
     return render(request, "core/signup.html", {"error": error})
 
 
