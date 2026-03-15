@@ -1,3 +1,4 @@
+
 # KhauBot — Mumbai's Hyperlocal Food Discovery Platform
 
 > AI-powered food discovery for Mumbai's informal food economy — street stalls, neighbourhood cafes, and cloud kitchens that Zomato/Swiggy don't cover.
@@ -8,19 +9,20 @@ KhauBot is a two-sided platform:
 - **For Vendors** — Any informal food business (street stall, cafe, cloud kitchen) can register for free. No GST, no FSSAI, no paperwork.
 - **For Users** — Search for food using natural language: *"spicy vada pav near Bandra under ₹50"* and KhauBot understands you.
 
-##  Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
 | Backend API | FastAPI (Python) |
+| AI / LLM | Groq (llama3-70b-8192) |
 | NLP Pipeline | langdetect + keyword extraction |
 | Database | PostgreSQL (Neon DB) |
 | Frontend | Django 5 + Tailwind CSS |
 | API Communication | httpx |
 
-##  Live Deployment
+## Live Deployment
 
-- Frontend (Vercel): https://khaubot-171u.vercel.app/
+- Frontend: https://khaubot-171u.vercel.app/
 - Backend API Docs: https://khaubot.vercel.app/docs
 
 ## Deploy Frontend On Vercel
@@ -32,10 +34,8 @@ Deploy only the Django frontend from this repository. Keep FastAPI backend deplo
 1. Import repository in Vercel.
 2. Set **Root Directory** to `khaubot/frontend/khaubot_web`.
 3. Framework preset can stay **Other**.
-4. Build command:
-      - `python manage.py collectstatic --noinput`
-5. Install command:
-      - `pip install -r requirements.txt`
+4. Build command: No build command required (leave blank)
+5. Install command: `pip install -r requirements.txt`
 
 ### Required environment variables in Vercel
 
@@ -49,7 +49,7 @@ Deploy only the Django frontend from this repository. Keep FastAPI backend deplo
 
 - `vercel.json` is provided in `khaubot/frontend/khaubot_web`.
 - API handler entrypoint is `api/index.py`.
-- Static files are served by WhiteNoise after running `collectstatic` at build time.
+- Static files are served by WhiteNoise.
 
 ## Deploy Backend On Vercel
 
@@ -59,16 +59,16 @@ Backend has a dedicated Vercel config at `khaubot/backend/vercel.json`.
 
 1. Import the same repository as a second Vercel project.
 2. Set **Root Directory** to `khaubot/backend`.
-3. Install command:
-      - `pip install -r requirements.txt`
+3. Install command: `pip install -r requirements.txt`
 4. No custom build command is required.
 
-##  Neon DB Setup For Backend
+### Required environment variables in Vercel
 
-Set these environment variables in your backend deployment (Vercel project settings):
-
-- `DATABASE_URL` = Neon connection string (pooled URL recommended)
+- `DATABASE_URL` = Neon connection string
 - `CORS_ORIGINS` = comma-separated allowed frontend origins
+- `GROQ_API_KEY` = your Groq API key
+
+## Neon DB Setup
 
 Example `DATABASE_URL` format:
 
@@ -82,7 +82,7 @@ Notes:
 - Backend auto-converts `postgres://` to `postgresql://` if needed.
 - Local development still defaults to SQLite when `DATABASE_URL` is not set.
 
-##  Running Locally
+## Running Locally
 
 ### 1. Backend (FastAPI)
 ```bash
@@ -94,7 +94,7 @@ uvicorn main:app --reload --port 8001
 ### 2. Frontend (Django)
 ```bash
 cd khaubot/frontend/khaubot_web
-pip install -r ../requirements.txt
+pip install -r requirements.txt
 python manage.py migrate
 python manage.py runserver 8002
 ```
@@ -103,7 +103,7 @@ python manage.py runserver 8002
 - Frontend: http://127.0.0.1:8002
 - API Docs: http://127.0.0.1:8001/docs
 
-##  API Endpoints
+## API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -113,12 +113,14 @@ python manage.py runserver 8002
 | PATCH | /api/vendor/{id}/approve | Approve a vendor |
 | GET | /api/destinations | List all approved vendors |
 
-##  How the NLP Pipeline Works
+## How the NLP Pipeline Works
 
 ```
 User types query
       ↓
 Language detection (English / Hindi / Hinglish)
+      ↓
+Groq AI extracts structured intent
       ↓
 Extract area (Bandra, Andheri, Juhu...)
       ↓
@@ -133,7 +135,7 @@ Match against vendor database
 Return ranked results
 ```
 
-##  Project Structure
+## Project Structure
 
 ```
 khaubot/
@@ -154,21 +156,16 @@ khaubot/
         └── templates/        # HTML pages
 ```
 
-##  Roadmap
+## Roadmap
 
 - [x] FastAPI backend with vendor registration + discovery API
 - [x] Django frontend deployed on Vercel
 - [x] PostgreSQL (Neon DB) connected on production
-- [x] Natural language search with NLP pipeline
+- [x] Natural language search with Groq AI + NLP pipeline
 - [ ] Hindi + Marathi full NLP support
 - [ ] PostgreSQL + pgvector semantic search
 - [ ] WhatsApp Business API integration
 - [ ] Mobile app
 
-##  Research
-
-This project is based on an IEEE-style research paper on AI-powered hyperlocal food discovery for Mumbai's informal food economy.
-
-
-
-*Made with ❤️ by Ketki Mohite*
+---
+Built by [Ketki Mohite](https://github.com/ketkivmohite) · [LinkedIn](https://www.linkedin.com/in/ketkimohite/)
