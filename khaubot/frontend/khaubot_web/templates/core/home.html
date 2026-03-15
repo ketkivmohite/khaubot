@@ -84,10 +84,12 @@
                     <a href="/login/" class="bg-zinc-700 hover:bg-zinc-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors duration-200">
                         Login
                     </a>
-                    {% endif %}
+                    {% if not user.is_authenticated %}
                     <a href="/vendor/" class="bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors duration-200">
                         For Vendors
                     </a>
+                    {% endif %}
+                    {% endif %}
                 </div>
             </header>
 
