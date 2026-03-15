@@ -197,13 +197,18 @@ def user_signup(request):
         password = request.POST.get("password")
         password2 = request.POST.get("password2")
         user_type = request.POST.get("user_type", "user")
+        email = request.POST.get("email", "").strip()
 
         if password != password2:
             error = "Passwords do not match."
+        elif not email:
+            error = "Email is required."
         elif User.objects.filter(username=username).exists():
             error = "Username already taken."
+        elif User.objects.filter(email=email).exists():
+            error = "An account with this email already exists."
         else:
-            user = User.objects.create_user(username=username, password=password)
+            user = User.objects.create_user(username=username, password=password, email=email)
             UserProfile.objects.create(user=user, user_type=user_type)
             user = authenticate(request, username=username, password=password)
             login(request, user)
