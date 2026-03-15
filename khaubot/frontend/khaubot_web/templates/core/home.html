@@ -211,7 +211,7 @@
             } else {
                 const intro = document.createElement("p");
                 intro.className = "text-sm sm:text-base leading-relaxed mb-3";
-                intro.textContent = `Yeh mila for \"${query}\":`;
+                intro.textContent = `Yeh mila for "${query}":`;
                 bubble.appendChild(intro);
 
                 const list = document.createElement("div");
@@ -231,11 +231,11 @@
             const wrapper = document.createElement("div");
             wrapper.className = "fade-in flex";
             wrapper.innerHTML = `
-                <div class="max-w-[90%] sm:max-w-[80%] rounded-2xl px-4 py-3 bg-red-950 border border-red-700">
-                    <p class="text-sm sm:text-base leading-relaxed"></p>
+                <div class="max-w-[90%] sm:max-w-[80%] rounded-2xl px-4 py-3 bg-zinc-800 border border-orange-500/20">
+                    <p class="text-sm sm:text-base leading-relaxed text-red-400">⚠️ </p>
                 </div>
             `;
-            wrapper.querySelector("p").textContent = message;
+            wrapper.querySelector("p").textContent = "⚠️ " + message;
             chatWindow.appendChild(wrapper);
             scrollToBottom();
         }
