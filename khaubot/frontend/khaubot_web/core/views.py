@@ -6,13 +6,18 @@ from django.conf import settings
 from django.views.decorators.http import require_POST
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from core.models import UserProfile
 
 FASTAPI_URL = settings.KHAUBOT_API_URL.rstrip("/")
+ADMIN_USERNAME = "ketki"
 
+@login_required(login_url='/login/')
 def home(request):
     return render(request, "core/home.html")
 
 
+@login_required(login_url='/login/')
 @require_POST
 def discover_chat(request):
     try:
@@ -102,6 +107,9 @@ def vendor_register(request):
 
 
 def khaubot_admin(request):
+    if not request.user.is_authenticated or request.user.username != ADMIN_USERNAME:
+        return redirect('/login/')
+
     error = None
     vendors = []
     users = []
@@ -133,6 +141,8 @@ def khaubot_admin(request):
 
 
 def admin_approve(request, vendor_id):
+    if not request.user.is_authenticated or request.user.username != ADMIN_USERNAME:
+        return redirect('/login/')
     try:
         httpx.patch(
             f"{FASTAPI_URL}/api/vendor/{vendor_id}/approve",
@@ -145,6 +155,8 @@ def admin_approve(request, vendor_id):
 
 
 def admin_reject(request, vendor_id):
+    if not request.user.is_authenticated or request.user.username != ADMIN_USERNAME:
+        return redirect('/login/')
     try:
         httpx.patch(
             f"{FASTAPI_URL}/api/vendor/{vendor_id}/reject",
@@ -176,12 +188,15 @@ def user_signup(request):
         username = request.POST.get("username")
         password = request.POST.get("password")
         password2 = request.POST.get("password2")
+        user_type = request.POST.get("user_type", "user")
+
         if password != password2:
             error = "Passwords do not match."
         elif User.objects.filter(username=username).exists():
             error = "Username already taken."
         else:
-            User.objects.create_user(username=username, password=password)
+            user = User.objects.create_user(username=username, password=password)
+            UserProfile.objects.create(user=user, user_type=user_type)
             user = authenticate(request, username=username, password=password)
             login(request, user)
             return redirect("/")

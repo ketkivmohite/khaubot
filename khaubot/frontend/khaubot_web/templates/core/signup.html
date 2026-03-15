@@ -47,6 +47,25 @@
                     class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-400"
                     placeholder="Repeat your password" />
             </div>
+
+            <div class="mb-6">
+                <label class="block text-sm text-zinc-400 mb-3">I am a...</label>
+                <div class="flex gap-3">
+                    <label class="flex-1 cursor-pointer">
+                        <input type="radio" name="user_type" value="user" class="hidden peer" checked>
+                        <div class="peer-checked:border-orange-400 peer-checked:bg-orange-500/10 border border-zinc-600 rounded-xl px-4 py-3 text-center text-sm font-semibold transition-all">
+                            🍽️ Food Finder
+                        </div>
+                    </label>
+                    <label class="flex-1 cursor-pointer">
+                        <input type="radio" name="user_type" value="vendor" class="hidden peer">
+                        <div class="peer-checked:border-orange-400 peer-checked:bg-orange-500/10 border border-zinc-600 rounded-xl px-4 py-3 text-center text-sm font-semibold transition-all">
+                            🏪 Vendor
+                        </div>
+                    </label>
+                </div>
+            </div>
+
             <button type="submit"
                 class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition">
                 Create Account
