@@ -1,7 +1,8 @@
-
 # KhauBot — Mumbai's Hyperlocal Food Discovery Platform
 
 > AI-powered food discovery for Mumbai's informal food economy — street stalls, neighbourhood cafes, and cloud kitchens that Zomato/Swiggy don't cover.
+
+> 71+ production deployments · Multilingual NLP · Mumbai's informal food economy, made searchable.
 
 ## What is KhauBot?
 
@@ -9,7 +10,9 @@ KhauBot is a two-sided platform:
 - **For Vendors** — Any informal food business (street stall, cafe, cloud kitchen) can register for free. No GST, no FSSAI, no paperwork.
 - **For Users** — Search for food using natural language: *"spicy vada pav near Bandra under ₹50"* and KhauBot understands you.
 
-## Tech Stack
+---
+
+## ⚙️ Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -20,100 +23,16 @@ KhauBot is a two-sided platform:
 | Frontend | Django 5 + Tailwind CSS |
 | API Communication | httpx |
 
-## Live Deployment
+---
+
+## 🌐 Live Deployment
 
 - Frontend: https://khaubot-171u.vercel.app/
 - Backend API Docs: https://khaubot.vercel.app/docs
 
-## Deploy Frontend On Vercel
+---
 
-Deploy only the Django frontend from this repository. Keep FastAPI backend deployed separately and point frontend to that API URL.
-
-### Vercel project settings
-
-1. Import repository in Vercel.
-2. Set **Root Directory** to `khaubot/frontend/khaubot_web`.
-3. Framework preset can stay **Other**.
-4. Build command: No build command required (leave blank)
-5. Install command: `pip install -r requirements.txt`
-
-### Required environment variables in Vercel
-
-- `SECRET_KEY` = strong random value
-- `DEBUG` = `False`
-- `ALLOWED_HOSTS` = `.vercel.app`
-- `CSRF_TRUSTED_ORIGINS` = `https://*.vercel.app`
-- `KHAUBOT_API_URL` = your deployed backend URL
-
-### Notes
-
-- `vercel.json` is provided in `khaubot/frontend/khaubot_web`.
-- API handler entrypoint is `api/index.py`.
-- Static files are served by WhiteNoise.
-
-## Deploy Backend On Vercel
-
-Backend has a dedicated Vercel config at `khaubot/backend/vercel.json`.
-
-### Backend Vercel project settings
-
-1. Import the same repository as a second Vercel project.
-2. Set **Root Directory** to `khaubot/backend`.
-3. Install command: `pip install -r requirements.txt`
-4. No custom build command is required.
-
-### Required environment variables in Vercel
-
-- `DATABASE_URL` = Neon connection string
-- `CORS_ORIGINS` = comma-separated allowed frontend origins
-- `GROQ_API_KEY` = your Groq API key
-
-## Neon DB Setup
-
-Example `DATABASE_URL` format:
-
-```
-postgresql://<user>:<password>@<host>/<dbname>?sslmode=require
-```
-
-Notes:
-
-- Keep `sslmode=require` in the Neon connection string.
-- Backend auto-converts `postgres://` to `postgresql://` if needed.
-- Local development still defaults to SQLite when `DATABASE_URL` is not set.
-
-## Running Locally
-
-### 1. Backend (FastAPI)
-```bash
-cd khaubot/backend
-pip install -r requirements.txt
-uvicorn main:app --reload --port 8001
-```
-
-### 2. Frontend (Django)
-```bash
-cd khaubot/frontend/khaubot_web
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver 8002
-```
-
-### 3. Open in browser
-- Frontend: http://127.0.0.1:8002
-- API Docs: http://127.0.0.1:8001/docs
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | /api/discover | Natural language food search |
-| POST | /api/vendor/register | Register a new vendor |
-| GET | /api/vendor/all | List all vendors |
-| PATCH | /api/vendor/{id}/approve | Approve a vendor |
-| GET | /api/destinations | List all approved vendors |
-
-## How the NLP Pipeline Works
+## 🧠 How the NLP Pipeline Works
 
 ```
 User types query
@@ -135,7 +54,21 @@ Match against vendor database
 Return ranked results
 ```
 
-## Project Structure
+---
+
+## 📡 API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | /api/discover | Natural language food search |
+| POST | /api/vendor/register | Register a new vendor |
+| GET | /api/vendor/all | List all vendors |
+| PATCH | /api/vendor/{id}/approve | Approve a vendor |
+| GET | /api/destinations | List all approved vendors |
+
+---
+
+## 📁 Project Structure
 
 ```
 khaubot/
@@ -156,7 +89,88 @@ khaubot/
         └── templates/        # HTML pages
 ```
 
-## Roadmap
+---
+
+## 🚀 Running Locally
+
+### 1. Backend (FastAPI)
+```bash
+cd khaubot/backend
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8001
+```
+
+### 2. Frontend (Django)
+```bash
+cd khaubot/frontend/khaubot_web
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver 8002
+```
+
+### 3. Open in browser
+- Frontend: http://127.0.0.1:8002
+- API Docs: http://127.0.0.1:8001/docs
+
+---
+
+## ☁️ Deploy Frontend On Vercel
+
+Deploy only the Django frontend from this repository. Keep FastAPI backend deployed separately and point frontend to that API URL.
+
+### Vercel project settings
+
+1. Import repository in Vercel.
+2. Set **Root Directory** to `khaubot/frontend/khaubot_web`.
+3. Framework preset can stay **Other**.
+4. Build command: No build command required (leave blank)
+5. Install command: `pip install -r requirements.txt`
+
+### Required environment variables
+
+- `SECRET_KEY` = strong random value
+- `DEBUG` = `False`
+- `ALLOWED_HOSTS` = `.vercel.app`
+- `CSRF_TRUSTED_ORIGINS` = `https://*.vercel.app`
+- `KHAUBOT_API_URL` = your deployed backend URL
+
+---
+
+## ☁️ Deploy Backend On Vercel
+
+Backend has a dedicated Vercel config at `khaubot/backend/vercel.json`.
+
+### Backend Vercel project settings
+
+1. Import the same repository as a second Vercel project.
+2. Set **Root Directory** to `khaubot/backend`.
+3. Install command: `pip install -r requirements.txt`
+4. No custom build command is required.
+
+### Required environment variables
+
+- `DATABASE_URL` = Neon connection string
+- `CORS_ORIGINS` = comma-separated allowed frontend origins
+- `GROQ_API_KEY` = your Groq API key
+
+---
+
+## 🗄️ Neon DB Setup
+
+Example `DATABASE_URL` format:
+
+```
+postgresql://<user>:<password>@<host>/<dbname>?sslmode=require
+```
+
+Notes:
+- Keep `sslmode=require` in the Neon connection string.
+- Backend auto-converts `postgres://` to `postgresql://` if needed.
+- Local development still defaults to SQLite when `DATABASE_URL` is not set.
+
+---
+
+## 🗺️ Roadmap
 
 - [x] FastAPI backend with vendor registration + discovery API
 - [x] Django frontend deployed on Vercel
@@ -168,4 +182,9 @@ khaubot/
 - [ ] Mobile app
 
 ---
-Built by [Ketki Mohite](https://github.com/ketkivmohite) · [LinkedIn](https://www.linkedin.com/in/ketkimohite/)
+
+## 👩‍💻 Author
+
+**Ketki Vijay Mohite**  
+📧 [ketkimohite214@gmail.com](mailto:ketkimohite214@gmail.com)  
+🎓 MCA Student | Backend Developer & AI Engineer
