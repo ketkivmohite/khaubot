@@ -174,7 +174,7 @@ def discover(request: DiscoverRequest, session: Session = Depends(get_session)):
             "category": v.category.value if v.category else "",
             "signature_dishes": v.signature_dishes or "",
             "operating_hours": v.operating_hours or "",
-            "whatsapp": v.whatsapp or "",
+            "whatsapp": getattr(v, "whatsapp", "") or "",
             "price_min": v.price_min,
             "price_max": v.price_max,
             "source": "khaubot",
