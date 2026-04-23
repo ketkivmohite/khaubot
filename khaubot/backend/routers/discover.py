@@ -40,7 +40,7 @@ MUMBAI_AREA_COORDS = {
 }
 
 
-def search_osm(area: str = "", food_type: str = "", radius: int = 2000) -> list:
+def search_osm(area: str = "", food_type: str = "", radius: int = 5000) -> list:
     """Search real food places on OpenStreetMap. Free, no API key."""
 
     # Get coordinates for the area
@@ -87,7 +87,7 @@ def search_osm(area: str = "", food_type: str = "", radius: int = 2000) -> list:
                 "source": "osm",
             })
 
-        return results[:10]
+        return results[:15]
 
     except Exception as e:
         print(f"OSM error: {e}")
