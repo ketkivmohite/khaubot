@@ -157,7 +157,7 @@ def discover(request: DiscoverRequest, session: Session = Depends(get_session)):
 
     # Step 3: OSM fallback if DB has less than 3 results
     osm_results = []
-    if len(db_results) < 3:
+    if len(db_results) < 10:
         osm_results = search_osm(
             area=intent.get("area", ""),
             food_type=intent.get("food_item", ""),
