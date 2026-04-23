@@ -7,3 +7,4 @@ crispy-tailwind==1.0.3
 psycopg2-binary
 python-dotenv
 dj-database-url
+requests
