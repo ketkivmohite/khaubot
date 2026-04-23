@@ -1,5 +1,6 @@
 import httpx
 import json
+import requests as req
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.conf import settings
@@ -11,6 +12,87 @@ from core.models import UserProfile
 
 FASTAPI_URL = settings.KHAUBOT_API_URL.rstrip("/")
 ADMIN_USERNAME = "ketki"
+
+
+# ── OSM direct search — works even when FastAPI is down ──────────
+
+def search_osm_django(query: str) -> list:
+    """Search real Mumbai food places directly from Django using OpenStreetMap."""
+
+    MUMBAI_AREAS = [
+        "bandra", "andheri", "juhu", "colaba", "dadar", "kurla",
+        "borivali", "malad", "goregaon", "powai", "thane", "worli",
+        "lower parel", "matunga", "sion", "chembur", "mulund",
+        "versova", "mahim", "khar", "santacruz", "vile parle",
+        "kandivali", "mira road", "dharavi", "ghatkopar", "mulund",
+        "vikhroli", "bhandup", "nahur", "wadala", "parel", "sewri",
+    ]
+
+    query_lower = query.lower()
+    area = ""
+    for a in MUMBAI_AREAS:
+        if a in query_lower:
+            area = a
+            break
+
+    # Geocode area to lat/lng
+    lat, lng = 19.0760, 72.8777  # Mumbai center default
+    if area:
+        try:
+            geo = req.get(
+                "https://nominatim.openstreetmap.org/search",
+                params={"q": f"{area}, Mumbai, India", "format": "json", "limit": 1},
+                headers={"User-Agent": "KhauBot/1.0 (khaubot-171u.vercel.app)"},
+                timeout=5
+            )
+            geo_results = geo.json()
+            if geo_results:
+                lat = float(geo_results[0]["lat"])
+                lng = float(geo_results[0]["lon"])
+        except Exception:
+            pass
+
+    # Search OpenStreetMap
+    try:
+        osm_query = f"""
+        [out:json][timeout:10];
+        node["amenity"~"restaurant|cafe|fast_food|food_court|bar|street_vendor"]["name"]
+        (around:5000,{lat},{lng});
+        out body;
+        """
+        resp = req.post(
+            "https://overpass-api.de/api/interpreter",
+            data={"data": osm_query},
+            headers={"User-Agent": "KhauBot/1.0 (khaubot-171u.vercel.app)"},
+            timeout=12
+        )
+        elements = resp.json().get("elements", [])
+        results = []
+        for el in elements[:10]:
+            tags = el.get("tags", {})
+            name = tags.get("name", "")
+            if not name:
+                continue
+            results.append({
+                "id": el.get("id"),
+                "name": name,
+                "area": area or "Mumbai",
+                "address": tags.get("addr:street", "Mumbai"),
+                "cuisine": tags.get("cuisine", ""),
+                "category": tags.get("amenity", ""),
+                "operating_hours": tags.get("opening_hours", ""),
+                "whatsapp": "",
+                "price_min": None,
+                "price_max": None,
+                "signature_dishes": "",
+                "source": "osm",
+            })
+        return results
+    except Exception:
+        return []
+
+
+# ── Views ────────────────────────────────────────────────────────
 
 @login_required(login_url='/login/')
 def home(request):
@@ -29,6 +111,7 @@ def discover_chat(request):
     if not query:
         return JsonResponse({"error": "Query is required."}, status=400)
 
+    # Try FastAPI first
     try:
         response = httpx.post(
             f"{FASTAPI_URL}/api/discover",
@@ -38,27 +121,25 @@ def discover_chat(request):
         )
         response.raise_for_status()
         data = response.json()
-        return JsonResponse(
-            {
+        results = data.get("results", [])
+        if results:
+            return JsonResponse({
                 "query": data.get("query", query),
                 "detected_language": data.get("detected_language", "unknown"),
-                "extracted_intent": data.get("extracted_intent", "food_search"),
-                "results": data.get("results", []),
-            },
-            status=200,
-        )
-    except httpx.RequestError:
-        return JsonResponse(
-            {"error": f"Could not reach backend at {FASTAPI_URL}."},
-            status=503,
-        )
-    except httpx.HTTPStatusError as e:
-        return JsonResponse(
-            {"error": f"Backend error {e.response.status_code}: {e.response.text[:200]}"},
-            status=502,
-        )
-    except Exception as e:
-        return JsonResponse({"error": f"Unexpected error: {str(e)}"}, status=500)
+                "extracted_intent": data.get("extracted_intent", {}),
+                "results": results,
+            }, status=200)
+    except Exception:
+        pass
+
+    # FastAPI failed or returned empty — search OSM directly
+    results = search_osm_django(query)
+    return JsonResponse({
+        "query": query,
+        "detected_language": "en",
+        "extracted_intent": {},
+        "results": results,
+    }, status=200)
 
 
 def vendor_register(request):
