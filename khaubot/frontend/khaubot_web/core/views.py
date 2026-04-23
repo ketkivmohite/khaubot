@@ -111,28 +111,7 @@ def discover_chat(request):
     if not query:
         return JsonResponse({"error": "Query is required."}, status=400)
 
-    # Try FastAPI first
-    try:
-        response = httpx.post(
-            f"{FASTAPI_URL}/api/discover",
-            json={"query": query},
-            timeout=10.0,
-            follow_redirects=True,
-        )
-        response.raise_for_status()
-        data = response.json()
-        results = data.get("results", [])
-        if results:
-            return JsonResponse({
-                "query": data.get("query", query),
-                "detected_language": data.get("detected_language", "unknown"),
-                "extracted_intent": data.get("extracted_intent", {}),
-                "results": results,
-            }, status=200)
-    except Exception:
-        pass
-
-    # FastAPI failed or returned empty — search OSM directly
+    # Go straight to OSM
     results = search_osm_django(query)
     return JsonResponse({
         "query": query,
