@@ -1,14 +1,14 @@
 # KhauBot — Mumbai's Hyperlocal Food Discovery Platform
 
-> AI-powered food discovery for Mumbai's informal food economy — street stalls, neighbourhood cafes, and cloud kitchens that Zomato/Swiggy don't cover.
+> AI-powered hyperlocal food discovery for Mumbai — street stalls, neighbourhood cafes, and cloud kitchens that Zomato/Swiggy don't cover. Now powered by real-time OpenStreetMap data across all of Mumbai.
 
-> 71+ production deployments · Multilingual NLP · Mumbai's informal food economy, made searchable.
+> 71+ production deployments · Multilingual NLP · Real-time food discovery via OpenStreetMap · Mumbai's informal food economy, made searchable.
 
 ## What is KhauBot?
 
-KhauBot is a two-sided platform:
-- **For Vendors** — Any informal food business (street stall, cafe, cloud kitchen) can register for free. No GST, no FSSAI, no paperwork.
-- **For Users** — Search for food using natural language: *"spicy vada pav near Bandra under ₹50"* and KhauBot understands you.
+KhauBot is a two-sided hyperlocal food discovery platform:
+- **For Users** — Search for food using natural language: *"momos near Dharavi"* or *"chai tapri near me"* and KhauBot finds real places instantly.
+- **For Vendors** — Any informal food business (street stall, cafe, cloud kitchen) can register for free. No GST, no FSSAI, no paperwork. Get discovered by users who can't find you on Zomato or Swiggy.
 
 ---
 
@@ -19,6 +19,8 @@ KhauBot is a two-sided platform:
 | Backend API | FastAPI (Python) |
 | AI / LLM | Groq (llama3-70b-8192) |
 | NLP Pipeline | langdetect + keyword extraction |
+| Maps & Discovery | OpenStreetMap + Overpass API |
+| Geocoding | Nominatim (free, no API key) |
 | Database | PostgreSQL (Neon DB) |
 | Frontend | Django 5 + Tailwind CSS |
 | API Communication | httpx |
@@ -29,6 +31,28 @@ KhauBot is a two-sided platform:
 
 - Frontend: https://khaubot-171u.vercel.app/
 - Backend API Docs: https://khaubot.vercel.app/docs
+
+---
+
+## 🗺️ How Real-Time Discovery Works
+
+KhauBot uses a two-layer discovery system:
+
+```
+User types: "momos near Versova"
+        ↓
+NLP extracts area → "versova"
+        ↓
+Nominatim geocodes → lat/lng coordinates
+        ↓
+Overpass API searches real food places within 5km
+        ↓
+Real Mumbai restaurants, cafes, street stalls shown
+        ↓
+(If vendor registered on KhauBot → shown first)
+```
+
+This means KhauBot works for **every Mumbai area** — Dharavi, Versova, Ghatkopar, anywhere — with zero manual data entry.
 
 ---
 
@@ -49,7 +73,7 @@ Extract price limit (under ₹100)
       ↓
 Detect vibe (budget meal, study cafe, late night...)
       ↓
-Match against vendor database
+Search OpenStreetMap + vendor database
       ↓
 Return ranked results
 ```
@@ -78,14 +102,14 @@ khaubot/
 │   ├── database.py           # DB connection (SQLite local / Neon DB on prod)
 │   ├── routers/
 │   │   ├── vendors.py        # Vendor endpoints
-│   │   └── discover.py       # Discovery endpoints
+│   │   └── discover.py       # Discovery + OSM integration
 │   └── nlp/
 │       └── pipeline.py       # NLP brain
 │
 └── frontend/                 # Django frontend
     └── khaubot_web/
         ├── config/           # Django settings
-        ├── core/             # Main app
+        ├── core/             # Main app + OSM search
         └── templates/        # HTML pages
 ```
 
@@ -116,8 +140,6 @@ python manage.py runserver 8002
 
 ## ☁️ Deploy Frontend On Vercel
 
-Deploy only the Django frontend from this repository. Keep FastAPI backend deployed separately and point frontend to that API URL.
-
 ### Vercel project settings
 
 1. Import repository in Vercel.
@@ -137,8 +159,6 @@ Deploy only the Django frontend from this repository. Keep FastAPI backend deplo
 ---
 
 ## ☁️ Deploy Backend On Vercel
-
-Backend has a dedicated Vercel config at `khaubot/backend/vercel.json`.
 
 ### Backend Vercel project settings
 
@@ -163,11 +183,6 @@ Example `DATABASE_URL` format:
 postgresql://<user>:<password>@<host>/<dbname>?sslmode=require
 ```
 
-Notes:
-- Keep `sslmode=require` in the Neon connection string.
-- Backend auto-converts `postgres://` to `postgresql://` if needed.
-- Local development still defaults to SQLite when `DATABASE_URL` is not set.
-
 ---
 
 ## 🗺️ Roadmap
@@ -176,10 +191,13 @@ Notes:
 - [x] Django frontend deployed on Vercel
 - [x] PostgreSQL (Neon DB) connected on production
 - [x] Natural language search with Groq AI + NLP pipeline
-- [ ] Hindi + Marathi full NLP support
-- [ ] PostgreSQL + pgvector semantic search
+- [x] OpenStreetMap real-time food discovery across all of Mumbai
+- [x] Auto geocoding for any Mumbai area via Nominatim
+- [ ] GPS-based "near me" detection
+- [ ] ChatGPT-style conversational responses
 - [ ] WhatsApp Business API integration
-- [ ] Mobile app
+- [ ] Vendor claim flow ("Is this your stall?")
+- [ ] Mobile PWA
 
 ---
 
