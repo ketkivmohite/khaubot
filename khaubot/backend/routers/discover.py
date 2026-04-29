@@ -42,8 +42,11 @@ def get_area_coords(area: str) -> tuple:
 
 
 # ── OpenStreetMap search ────────────────────────────────────────
-def search_osm(area: str = "", food_type: str = "", radius: int = 5000) -> list:
-    lat, lng = get_area_coords(area)
+# CHANGED: added lat and lng as optional params — uses GPS directly when provided
+def search_osm(area: str = "", food_type: str = "", radius: int = 5000, lat: float = None, lng: float = None) -> list:
+    if lat is None or lng is None:
+        lat, lng = get_area_coords(area)
+    # else: GPS coords provided directly, skip Nominatim geocoding
     query = f"""
     [out:json][timeout:10];
     node
@@ -128,9 +131,13 @@ def discover(request: DiscoverRequest, session: Session = Depends(get_session)):
         db_results = [v for _, v in scored_results[:10]]
     osm_results = []
     if len(db_results) < 10:
+        # CHANGED: detect "near me" and pass GPS coords if available
+        is_near_me = "near me" in request.query.lower()
         osm_results = search_osm(
             area=intent.get("area", ""),
             food_type=intent.get("food_item", ""),
+            lat=request.lat if is_near_me else None,
+            lng=request.lng if is_near_me else None,
         )
     def vendor_to_dict(v):
         return {

@@ -106,7 +106,7 @@
                     <input
                         id="chatInput"
                         type="text"
-                        placeholder="Type like: chai tapri near Bandra"
+                        placeholder="Type like: chai tapri near me"
                         autocomplete="off"
                         class="flex-1 rounded-xl bg-zinc-800 border border-zinc-700 px-4 py-3 text-sm sm:text-base text-white placeholder-zinc-400 focus:outline-none focus:border-orange-400"
                     />
@@ -118,7 +118,7 @@
                         Send
                     </button>
                 </form>
-                <p class="text-[11px] sm:text-xs text-zinc-400 mt-2">Try: "ghar ka khana deliver karo" or "vada pav Bandra"</p>
+                <p class="text-[11px] sm:text-xs text-zinc-400 mt-2">Try: "chai near me" or "vada pav Bandra" or "ghar ka khana deliver karo"</p>
             </div>
         </section>
     </main>
@@ -263,6 +263,20 @@
 
             const typingEl = addTypingIndicator();
 
+            // GPS: get coordinates if query has "near me"
+            let lat = null, lng = null;
+            if (query.toLowerCase().includes("near me") && navigator.geolocation) {
+                try {
+                    const pos = await new Promise((resolve, reject) =>
+                        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
+                    );
+                    lat = pos.coords.latitude;
+                    lng = pos.coords.longitude;
+                } catch (_) {
+                    // user denied location — lat/lng stay null, backend falls back to Mumbai center
+                }
+            }
+
             try {
                 const [response] = await Promise.all([
                     fetch("/api/discover/", {
@@ -271,7 +285,7 @@
                             "Content-Type": "application/json",
                             "X-CSRFToken": csrfToken,
                         },
-                        body: JSON.stringify({ query }),
+                        body: JSON.stringify({ query, lat, lng }),
                     }),
                     wait(1200),
                 ]);

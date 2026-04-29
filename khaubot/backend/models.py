@@ -78,7 +78,9 @@ class VendorRead(SQLModel):
 
 class DiscoverRequest(SQLModel):
     """User's natural language query"""
-    query: str   # e.g. "spicy street food near Bandra under ₹100"
+    query: str              # e.g. "spicy street food near Bandra under ₹100"
+    lat: Optional[float] = None   # GPS latitude from browser (for "near me" queries)
+    lng: Optional[float] = None   # GPS longitude from browser (for "near me" queries)
 
 
 class DiscoverResponse(SQLModel):
