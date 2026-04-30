@@ -73,7 +73,7 @@ def search_osm(area: str = "", food_type: str = "", radius: int = 5000, lat: flo
             results.append({
                 "id": el.get("id"),
                 "name": name,
-                "area": area,
+                "area": area or "Near You",  # FIX 1: show "Near You" when GPS is used
                 "address": tags.get("addr:street", "Mumbai"),
                 "cuisine": tags.get("cuisine", ""),
                 "category": tags.get("amenity", ""),
@@ -84,6 +84,15 @@ def search_osm(area: str = "", food_type: str = "", radius: int = 5000, lat: flo
                 "signature_dishes": "",
                 "source": "osm",
             })
+
+        # FIX 2: filter by food_type if provided, fallback to all results if nothing matches
+        if food_type:
+            filtered = [
+                r for r in results
+                if food_type.lower() in (r["name"] + " " + r["cuisine"]).lower()
+            ]
+            results = filtered if filtered else results
+
         return results[:15]
     except Exception as e:
         print(f"OSM error: {e}")
