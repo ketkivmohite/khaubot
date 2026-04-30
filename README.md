@@ -2,12 +2,12 @@
 
 > AI-powered hyperlocal food discovery for Mumbai — street stalls, neighbourhood cafes, and cloud kitchens that Zomato/Swiggy don't cover. Now powered by real-time OpenStreetMap data across all of Mumbai.
 
-> 71+ production deployments · Multilingual NLP · Real-time food discovery via OpenStreetMap · Mumbai's informal food economy, made searchable.
+> 71+ production deployments · Multilingual NLP · GPS "near me" detection · Real-time food discovery via OpenStreetMap · Mumbai's informal food economy, made searchable.
 
 ## What is KhauBot?
 
 KhauBot is a two-sided hyperlocal food discovery platform:
-- **For Users** — Search for food using natural language: *"momos near Dharavi"* or *"chai tapri near me"* and KhauBot finds real places instantly.
+- **For Users** — Search for food using natural language: *"momos near Dharavi"* or *"chai tapri near me"* and KhauBot finds real places instantly using your GPS location.
 - **For Vendors** — Any informal food business (street stall, cafe, cloud kitchen) can register for free. No GST, no FSSAI, no paperwork. Get discovered by users who can't find you on Zomato or Swiggy.
 
 ---
@@ -21,6 +21,7 @@ KhauBot is a two-sided hyperlocal food discovery platform:
 | NLP Pipeline | langdetect + keyword extraction |
 | Maps & Discovery | OpenStreetMap + Overpass API |
 | Geocoding | Nominatim (free, no API key) |
+| GPS Detection | Browser Geolocation API |
 | Database | PostgreSQL (Neon DB) |
 | Frontend | Django 5 + Tailwind CSS |
 | API Communication | httpx |
@@ -38,6 +39,20 @@ KhauBot is a two-sided hyperlocal food discovery platform:
 
 KhauBot uses a two-layer discovery system:
 
+**GPS "near me" queries:**
+```
+User types: "chai near me"
+        ↓
+Browser Geolocation API sends real GPS coordinates
+        ↓
+Overpass API searches real food places within 5km of user
+        ↓
+Real nearby restaurants, cafes, street stalls shown first
+        ↓
+Registered KhauBot vendors shown below
+```
+
+**Area-based queries:**
 ```
 User types: "momos near Versova"
         ↓
@@ -65,7 +80,7 @@ Language detection (English / Hindi / Hinglish)
       ↓
 Groq AI extracts structured intent
       ↓
-Extract area (Bandra, Andheri, Juhu...)
+Extract area (Bandra, Andheri, Juhu...) OR use GPS if "near me"
       ↓
 Extract cuisine / dish (vada pav, biryani, chai...)
       ↓
@@ -102,7 +117,7 @@ khaubot/
 │   ├── database.py           # DB connection (SQLite local / Neon DB on prod)
 │   ├── routers/
 │   │   ├── vendors.py        # Vendor endpoints
-│   │   └── discover.py       # Discovery + OSM integration
+│   │   └── discover.py       # Discovery + OSM + GPS integration
 │   └── nlp/
 │       └── pipeline.py       # NLP brain
 │
@@ -193,7 +208,7 @@ postgresql://<user>:<password>@<host>/<dbname>?sslmode=require
 - [x] Natural language search with Groq AI + NLP pipeline
 - [x] OpenStreetMap real-time food discovery across all of Mumbai
 - [x] Auto geocoding for any Mumbai area via Nominatim
-- [ ] GPS-based "near me" detection
+- [x] GPS-based "near me" detection
 - [ ] ChatGPT-style conversational responses
 - [ ] WhatsApp Business API integration
 - [ ] Vendor claim flow ("Is this your stall?")
