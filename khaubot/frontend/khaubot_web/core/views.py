@@ -14,7 +14,7 @@ FASTAPI_URL = settings.KHAUBOT_API_URL.rstrip("/")
 ADMIN_USERNAME = "ketki"
 
 
-# ── OSM direct search — works even when FastAPI is down ──────────
+# ── OSM direct search — fallback when FastAPI is down ──────────
 
 def search_osm_django(query: str) -> list:
     """Search real Mumbai food places directly from Django using OpenStreetMap."""
@@ -35,7 +35,6 @@ def search_osm_django(query: str) -> list:
             area = a
             break
 
-    # Geocode area to lat/lng
     lat, lng = 19.0760, 72.8777  # Mumbai center default
     if area:
         try:
@@ -52,7 +51,6 @@ def search_osm_django(query: str) -> list:
         except Exception:
             pass
 
-    # Search OpenStreetMap
     try:
         osm_query = f"""
         [out:json][timeout:10];
@@ -108,17 +106,31 @@ def discover_chat(request):
         return JsonResponse({"error": "Invalid JSON payload."}, status=400)
 
     query = (body.get("query") or "").strip()
+    lat = body.get("lat")   # GPS latitude from browser
+    lng = body.get("lng")   # GPS longitude from browser
+
     if not query:
         return JsonResponse({"error": "Query is required."}, status=400)
 
-    # Go straight to OSM
-    results = search_osm_django(query)
-    return JsonResponse({
-        "query": query,
-        "detected_language": "en",
-        "extracted_intent": {},
-        "results": results,
-    }, status=200)
+    # Forward to FastAPI with GPS coords
+    try:
+        response = httpx.post(
+            f"{FASTAPI_URL}/api/discover",
+            json={"query": query, "lat": lat, "lng": lng},
+            timeout=15.0,
+            follow_redirects=True,
+        )
+        response.raise_for_status()
+        return JsonResponse(response.json(), status=200)
+    except Exception:
+        # Fallback to Django OSM if FastAPI is down
+        results = search_osm_django(query)
+        return JsonResponse({
+            "query": query,
+            "detected_language": "en",
+            "extracted_intent": {},
+            "results": results,
+        }, status=200)
 
 
 def vendor_register(request):
