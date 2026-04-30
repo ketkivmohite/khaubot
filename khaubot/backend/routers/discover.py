@@ -42,23 +42,35 @@ def get_area_coords(area: str) -> tuple:
 
 
 # ── OpenStreetMap search ────────────────────────────────────────
-# CHANGED: added lat and lng as optional params — uses GPS directly when provided
 def search_osm(area: str = "", food_type: str = "", radius: int = 5000, lat: float = None, lng: float = None) -> list:
     if lat is None or lng is None:
         lat, lng = get_area_coords(area)
     # else: GPS coords provided directly, skip Nominatim geocoding
-    query = f"""
-    [out:json][timeout:10];
-    node
-      ["amenity"~"restaurant|cafe|fast_food|food_court|bar|street_vendor"]
-      ["name"]
-      (around:{radius},{lat},{lng});
-    out body;
-    """
+
+    # Build Overpass query — filter by cuisine tag OR place name when food_type is known
+    if food_type:
+        overpass_query = f"""
+[out:json][timeout:10];
+(
+  node["amenity"~"restaurant|cafe|fast_food|food_court|bar|street_vendor"]["name"]["cuisine"~"{food_type}",i](around:{radius},{lat},{lng});
+  node["amenity"~"restaurant|cafe|fast_food|food_court|bar|street_vendor"]["name"~"{food_type}",i](around:{radius},{lat},{lng});
+);
+out body;
+"""
+    else:
+        overpass_query = f"""
+[out:json][timeout:10];
+node
+  ["amenity"~"restaurant|cafe|fast_food|food_court|bar|street_vendor"]
+  ["name"]
+  (around:{radius},{lat},{lng});
+out body;
+"""
+
     try:
         resp = requests.post(
             "https://overpass-api.de/api/interpreter",
-            data={"data": query},
+            data={"data": overpass_query},
             headers={"User-Agent": "KhauBot/1.0 (khaubot-171u.vercel.app)"},
             timeout=12
         )
@@ -73,7 +85,7 @@ def search_osm(area: str = "", food_type: str = "", radius: int = 5000, lat: flo
             results.append({
                 "id": el.get("id"),
                 "name": name,
-                "area": area or "Near You",  # FIX 1: show "Near You" when GPS is used
+                "area": area or "Near You",
                 "address": tags.get("addr:street", "Mumbai"),
                 "cuisine": tags.get("cuisine", ""),
                 "category": tags.get("amenity", ""),
@@ -84,14 +96,6 @@ def search_osm(area: str = "", food_type: str = "", radius: int = 5000, lat: flo
                 "signature_dishes": "",
                 "source": "osm",
             })
-
-        # FIX 2: filter by food_type if provided, fallback to all results if nothing matches
-        if food_type:
-            filtered = [
-                r for r in results
-                if food_type.lower() in (r["name"] + " " + r["cuisine"]).lower()
-            ]
-            results = filtered if filtered else results
 
         return results[:15]
     except Exception as e:
@@ -140,7 +144,6 @@ def discover(request: DiscoverRequest, session: Session = Depends(get_session)):
         db_results = [v for _, v in scored_results[:10]]
     osm_results = []
     if len(db_results) < 10:
-        # CHANGED: detect "near me" and pass GPS coords if available
         is_near_me = "near me" in request.query.lower()
         osm_results = search_osm(
             area=intent.get("area", ""),
